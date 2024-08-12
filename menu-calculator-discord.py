@@ -120,12 +120,16 @@ with cols[1]:
         if quantity > 0:
             order[("Non-Alcoholic Drinks", item)] = quantity
 
+# Submit button with validation
 if st.button("Submit Order"):
-    # Generate the order summary and calculate the total price
-    order_summary = "\n".join([f"{item} x{quantity}" for (category, item), quantity in order.items()])
-    total_price = sum(menu[category][item] * quantity for (category, item), quantity in order.items())
-
-    if send_order_to_discord(customer_name, phone_number, order_summary, total_price):
-        st.success(f"Order sent successfully to Sightings! A member of the team will be in contact to confirm your order. Your total is **${total_price}**.")
+    if not customer_name or not phone_number:
+        st.warning("Please enter both your name and phone number to submit your order.")
     else:
-        st.error("Failed to send order to Sightings.")
+        # Generate the order summary and calculate the total price
+        order_summary = "\n".join([f"{item} x{quantity}" for (category, item), quantity in order.items()])
+        total_price = sum(menu[category][item] * quantity for (category, item), quantity in order.items())
+
+        if send_order_to_discord(customer_name, phone_number, order_summary, total_price):
+            st.success(f"Order sent successfully to Sightings! A member of the team will be in contact to confirm your order. Your total is **${total_price}**.")
+        else:
+            st.error("Failed to send order to Sightings.")
