@@ -34,6 +34,42 @@ def create_thread_and_send_order(bot_token, channel_id, customer_name, phone_num
     else:
         return False
 
+#menu 
+menu = {
+    "Breakfast": {
+        "Crater Cinnamon Roll Pancakes": 73.50,
+        "Nebula Nosh Chicken & Waffles": 115.50,
+        "Extraterrestrial Omelet": 87.50
+    },
+    "Starters": {
+        "Celestial Caesar Salad": 70.00,
+        "Alien Antenna Bites": 98.00,
+        "Orbiting Onion Rings": 52.50
+    },
+    "Mains": {
+        "Celestial Creature Gyro": 115.50,
+        "Andromeda Invader Curry": 105.00,
+        "Planetary Pizza": 70.00,
+        "Galaxy Guac Burger and Meteorite Fries": 122.50
+    },
+    "Desserts": {
+        "Spacecraft S’mores Shake": 56.00,
+        "Blackhole Brownies": 66.50,
+        "Martian Mousse": 73.50
+    },
+    "Alcoholic Drinks": {
+        "UFO Umbrella Drink": 50.00,
+        "Asteroid Amaretto Sour": 57.50,
+        "Alien Ambrosia": 62.50
+    },
+    "Non-Alcoholic Drinks": {
+        "Lunar Lemonade": 27.50,
+        "Comet Cola Float": 32.50,
+        "Galactic Grape Cola": 27.50,
+        "Nebula Nectar Cola": 27.50
+    }
+}
+
 # Streamlit Interface
 st.title("🚀 Sightings Delivery 🌌")
 
