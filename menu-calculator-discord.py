@@ -1,40 +1,7 @@
-import os
 import streamlit as st
 import requests
 
-# Discord bot token and channel ID (replace with your actual values)
-BOT_TOKEN = st.secrets["DISCORD_BOT_TOKEN"]
-CHANNEL_ID = "1146423710778142780" # The forum channel ID where threads are created
-
-def create_thread_and_send_order(bot_token, channel_id, customer_name, phone_number, order_summary, total_price):
-    # Create a new thread in the forum channel
-    url = f"https://discord.com/api/v9/channels/{channel_id}/threads"
-    headers = {
-        "Authorization": f"Bot {bot_token}",
-        "Content-Type": "application/json"
-    }
-    thread_data = {
-        "name": f"Order from {customer_name}",
-        "type": 11,  # 11 is the type for a forum post
-        "auto_archive_duration": 1440  # Archive after 24 hours
-    }
-    response = requests.post(url, headers=headers, json=thread_data)
-    
-    if response.status_code == 201:
-        thread_id = response.json()["id"]
-        
-        # Post the order details in the newly created thread
-        message_url = f"https://discord.com/api/v9/channels/{thread_id}/messages"
-        message_data = {
-            "content": f"New Order Received:\n\nCustomer Name: {customer_name}\nPhone Number: {phone_number}\n\n{order_summary}\n**Total: ${total_price}**"
-        }
-        message_response = requests.post(message_url, headers=headers, json=message_data)
-        
-        return message_response.status_code == 200
-    else:
-        return False
-
-#menu 
+# Define the menu dictionary
 menu = {
     "Breakfast": {
         "Crater Cinnamon Roll Pancakes": 73.50,
@@ -70,8 +37,46 @@ menu = {
     }
 }
 
+# Define the calculate_total function
+def calculate_total(order):
+    subtotal = 0
+    for item, quantity in order.items():
+        subtotal += menu[item[0]][item[1]] * quantity
+
+    total = subtotal  # No extra fees added
+    return round(subtotal, 2), round(total, 2)
+
+# Function to create a new thread and send the order to Discord
+def create_thread_and_send_order(bot_token, channel_id, customer_name, phone_number, order_summary, total_price):
+    # Create a new thread in the forum channel
+    url = f"https://discord.com/api/v9/channels/{channel_id}/threads"
+    headers = {
+        "Authorization": f"Bot {bot_token}",
+        "Content-Type": "application/json"
+    }
+    thread_data = {
+        "name": f"Order from {customer_name}",
+        "type": 11,  # 11 is the type for a forum post
+        "auto_archive_duration": 1440  # Archive after 24 hours
+    }
+    response = requests.post(url, headers=headers, json=thread_data)
+    
+    if response.status_code == 201:
+        thread_id = response.json()["id"]
+        
+        # Post the order details in the newly created thread
+        message_url = f"https://discord.com/api/v9/channels/{thread_id}/messages"
+        message_data = {
+            "content": f"New Order Received:\n\nCustomer Name: {customer_name}\nPhone Number: {phone_number}\n\n{order_summary}\n**Total: ${total_price}**"
+        }
+        message_response = requests.post(message_url, headers=headers, json=message_data)
+        
+        return message_response.status_code == 200
+    else:
+        return False
+
 # Streamlit Interface
-st.title("🚀 Sightings Delivery 🌌")
+st.title("🚀 Sightings Menu Calculator 🌌")
 
 # Section for entering customer name and in-character phone number
 customer_name = st.text_input("Enter your name", "")
@@ -79,9 +84,8 @@ phone_number = st.text_input("Enter your in-character phone number", "")
 
 order = {}
 
+# First row for menu inputs
 cols = st.columns(2)
-
-# First row
 with cols[0]:
     st.subheader("🌅 Breakfast")
     for item, price in menu["Breakfast"].items():
@@ -96,9 +100,8 @@ with cols[1]:
         if quantity > 0:
             order[("Starters", item)] = quantity
 
-# Second row
+# Second row for menu inputs
 cols = st.columns(2)
-
 with cols[0]:
     st.subheader("🍽️ Mains")
     for item, price in menu["Mains"].items():
@@ -113,9 +116,8 @@ with cols[1]:
         if quantity > 0:
             order[("Desserts", item)] = quantity
 
-# Third row
+# Third row for menu inputs
 cols = st.columns(2)
-
 with cols[0]:
     st.subheader("🍹 Alcoholic Drinks")
     for item, price in menu["Alcoholic Drinks"].items():
@@ -141,7 +143,11 @@ if st.button("Submit Order"):
     st.subheader("Order Summary")
     st.markdown(order_summary)
 
+    BOT_TOKEN = st.secrets["DISCORD_BOT_TOKEN"]  # Use st.secrets for the bot token
+    CHANNEL_ID = "1146423710778142780"  # Replace with your forum channel ID
+
     if create_thread_and_send_order(BOT_TOKEN, CHANNEL_ID, customer_name, phone_number, order_summary, total_price):
         st.success("Order sent successfully to Sightings!")
     else:
         st.error("Failed to send order to Sightings.")
+
