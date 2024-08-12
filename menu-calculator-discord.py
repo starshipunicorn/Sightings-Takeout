@@ -1,8 +1,9 @@
 import streamlit as st
 import requests
 
-# Discord webhook URL (replace with your own webhook URL)
-WEBHOOK_URL = "https://discord.com/api/webhooks/1144358837051199508/3nRSaDRj7nzTYWcFIlQOIqCHpEgLLt0EpQLHg7yTvqAXtBWsqcZMXpgfjhxwA68e97_L"
+# Discord bot token and channel ID (replace with your actual values)
+BOT_TOKEN = "MTI3MjAxNDY2MzQ1MzkwMDgwMA.GzmCmJ.tkMvQ1D_XXRyKZty7-sYMlhowTEppAUFfz0YO4"
+CHANNEL_ID = "1146423710778142780" # The forum channel ID where threads are created
 
 # Menu Items with their Prices
 menu = {
@@ -45,24 +46,41 @@ def calculate_total(order):
     subtotal = 0
     for item, quantity in order.items():
         subtotal += menu[item[0]][item[1]] * quantity
+    return round(subtotal, 2), round(subtotal, 2)
 
-    delivery_fee = 200
-    total = subtotal + delivery_fee
-
-    return round(subtotal, 2), round(total, 2)
-
-# Function to send order to Discord
-def send_order_to_discord(phone_number, order_summary, total_price):
-    data = {
-        "content": f"New Order Received:\n\nPhone Number: {phone_number}\n\n{order_summary}\n**Total: ${total_price}**"
+# Function to create a new thread and send the order to Discord
+def create_thread_and_send_order(bot_token, channel_id, customer_name, phone_number, order_summary, total_price):
+    # Create a new thread in the forum channel
+    url = f"https://discord.com/api/v9/channels/{channel_id}/threads"
+    headers = {
+        "Authorization": f"Bot {bot_token}",
+        "Content-Type": "application/json"
     }
-    response = requests.post(WEBHOOK_URL, json=data)
-    return response.status_code == 204
+    thread_data = {
+        "name": f"Order from {customer_name}",
+        "type": 11,  # 11 is the type for a forum post
+        "auto_archive_duration": 1440  # Archive after 24 hours
+    }
+    response = requests.post(url, headers=headers, json=thread_data)
+
+    if response.status_code == 201:
+        thread_id = response.json()["id"]
+        
+        # Post the order details in the newly created thread
+        message_url = f"https://discord.com/api/v9/channels/{thread_id}/messages"
+        message_data = {
+            "content": f"New Order Received:\n\nCustomer Name: {customer_name}\nPhone Number: {phone_number}\n\n{order_summary}\n**Total: ${total_price}**"
+        }
+        message_response = requests.post(message_url, headers=headers, json=message_data)
+        return message_response.status_code == 200
+    else:
+        return False
 
 # Streamlit Interface
-st.title("🚀 Space-Themed Menu Calculator 🌌")
+st.title("🚀 Sightings Delivery 🌌")
 
-# Section for entering in-character phone number
+# Section for entering customer name and in-character phone number
+customer_name = st.text_input("Enter your name", "")
 phone_number = st.text_input("Enter your in-character phone number", "")
 
 order = {}
@@ -120,18 +138,17 @@ with cols[1]:
 
 if st.button("Submit Order"):
     subtotal, total_price = calculate_total(order)
-    delivery_fee = 200
     order_summary = "\n".join([f"- {item} ({category}): {quantity} @ ${menu[category][item]} each"
                                for (category, item), quantity in order.items()])
     
     st.markdown(f"## Subtotal: **${subtotal}**")
-    st.markdown(f"### Delivery Fee: **${delivery_fee}**")
     st.markdown(f"## 🧾 The total price of the order is: **${total_price}**")
     
     st.subheader("Order Summary")
     st.markdown(order_summary)
 
-    if send_order_to_discord(order_summary, total_price):
-        st.success("Order sent successfully to Sightings Staff!")
+    if create_thread_and_send_order(BOT_TOKEN, CHANNEL_ID, customer_name, phone_number, order_summary, total_price):
+        st.success("Order sent successfully to Sightings!")
     else:
-        st.error("Failed to send order to Sightins Staff.")
+        st.error("Failed to send order to Sightings.")
+
