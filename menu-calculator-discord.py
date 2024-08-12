@@ -126,6 +126,6 @@ if st.button("Submit Order"):
     total_price = sum(menu[category][item] * quantity for (category, item), quantity in order.items())
 
     if send_order_to_discord(customer_name, phone_number, order_summary, total_price):
-        st.success("Order sent successfully to Sightings!")
+        st.success(f"Order sent successfully to Sightings! A member of the team will be in contact to confirm your order. Your total is **${total_price}**.")
     else:
         st.error("Failed to send order to Sightings.")
