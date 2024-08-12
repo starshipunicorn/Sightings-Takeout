@@ -3,7 +3,7 @@ import requests
 
 # Discord bot token and channel ID (replace with your actual values)
 BOT_TOKEN = st.secrets["DISCORD_BOT_TOKEN"]
-CHANNEL_ID = "your_channel_id_here" # The forum channel ID where threads are created
+CHANNEL_ID = "1146423710778142780" # The forum channel ID where threads are created
 
 # Menu Items with their Prices
 menu = {
