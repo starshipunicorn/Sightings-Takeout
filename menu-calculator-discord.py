@@ -1,3 +1,4 @@
+import os
 import streamlit as st
 import requests
 
@@ -5,50 +6,6 @@ import requests
 BOT_TOKEN = st.secrets["DISCORD_BOT_TOKEN"]
 CHANNEL_ID = "1146423710778142780" # The forum channel ID where threads are created
 
-# Menu Items with their Prices
-menu = {
-    "Breakfast": {
-        "Crater Cinnamon Roll Pancakes": 73.50,
-        "Nebula Nosh Chicken & Waffles": 115.50,
-        "Extraterrestrial Omelet": 87.50
-    },
-    "Starters": {
-        "Celestial Caesar Salad": 70.00,
-        "Alien Antenna Bites": 98.00,
-        "Orbiting Onion Rings": 52.50
-    },
-    "Mains": {
-        "Celestial Creature Gyro": 115.50,
-        "Andromeda Invader Curry": 105.00,
-        "Planetary Pizza": 70.00,
-        "Galaxy Guac Burger and Meteorite Fries": 122.50
-    },
-    "Desserts": {
-        "Spacecraft S’mores Shake": 56.00,
-        "Blackhole Brownies": 66.50,
-        "Martian Mousse": 73.50
-    },
-    "Alcoholic Drinks": {
-        "UFO Umbrella Drink": 50.00,
-        "Asteroid Amaretto Sour": 57.50,
-        "Alien Ambrosia": 62.50
-    },
-    "Non-Alcoholic Drinks": {
-        "Lunar Lemonade": 27.50,
-        "Comet Cola Float": 32.50,
-        "Galactic Grape Cola": 27.50,
-        "Nebula Nectar Cola": 27.50
-    }
-}
-
-# Function to calculate total price
-def calculate_total(order):
-    subtotal = 0
-    for item, quantity in order.items():
-        subtotal += menu[item[0]][item[1]] * quantity
-    return round(subtotal, 2), round(subtotal, 2)
-
-# Function to create a new thread and send the order to Discord
 def create_thread_and_send_order(bot_token, channel_id, customer_name, phone_number, order_summary, total_price):
     # Create a new thread in the forum channel
     url = f"https://discord.com/api/v9/channels/{channel_id}/threads"
@@ -62,7 +19,7 @@ def create_thread_and_send_order(bot_token, channel_id, customer_name, phone_num
         "auto_archive_duration": 1440  # Archive after 24 hours
     }
     response = requests.post(url, headers=headers, json=thread_data)
-
+    
     if response.status_code == 201:
         thread_id = response.json()["id"]
         
@@ -72,6 +29,7 @@ def create_thread_and_send_order(bot_token, channel_id, customer_name, phone_num
             "content": f"New Order Received:\n\nCustomer Name: {customer_name}\nPhone Number: {phone_number}\n\n{order_summary}\n**Total: ${total_price}**"
         }
         message_response = requests.post(message_url, headers=headers, json=message_data)
+        
         return message_response.status_code == 200
     else:
         return False
@@ -151,4 +109,3 @@ if st.button("Submit Order"):
         st.success("Order sent successfully to Sightings!")
     else:
         st.error("Failed to send order to Sightings.")
-
