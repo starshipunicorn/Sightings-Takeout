@@ -62,7 +62,7 @@ def send_order_to_discord(customer_name, phone_number, order_summary, total_pric
     return response.status_code == 204
 
 # Streamlit Interface
-st.title("🚀 Sightings Menu Calculator 🌌")
+st.title("🚀 Sightings Delivery 🌌")
 
 # Section for entering customer name and in-character phone number
 customer_name = st.text_input("Enter your name", "")
@@ -136,5 +136,5 @@ if st.button("Submit Order"):
         if send_order_to_discord(customer_name, phone_number, order_summary, total_price):
             st.success(f"Order sent successfully to Sightings! A member of the team will be in contact to confirm your order. Your total is **${total_price}**.")
         else:
-            st.error("Failed to send order to Discord.")
+            st.error("Failed to send order to Sightings.")
 
