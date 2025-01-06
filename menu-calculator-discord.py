@@ -2,7 +2,7 @@ import streamlit as st
 import requests
 import math
 
-# Define the menu dictionary (no changes needed here)
+# Define the menu dictionary
 menu = {
     "Breakfast": {
         "Crater Cinnamon Roll Pancakes": 73.50,
@@ -42,16 +42,16 @@ menu = {
 WEBHOOK_URL = "https://discord.com/api/webhooks/1272653289984364654/GiWp1B37ITq2yvtLWRfIGY7IIIzOIAyI4s2LXDYbjv_aJMc-q8jFZrowYGScKeC4Tuz7"
 
 # Function to send order to Discord with role mention
-def send_order_to_discord(customer_name, phone_number, delivery_location, order_summary, total_price):
+def send_order_to_discord(customer_name, phone_number, delivery_location, area, order_summary, total_price):
     role_mention = "<@&1146438518235725954>"  # Mention the 'sightings takeout' role
     embed = {
         "title": f"New Order from {customer_name}",
-        "description": f"{role_mention}\n\n**Phone Number**: {phone_number}\n\n**Delivery Location**: {delivery_location}\n\n**Order Summary**:\n{order_summary}\n\n**Total**: ${total_price}",
+        "description": f"{role_mention}\n\n**Phone Number**: {phone_number}\n\n**Delivery Location**: {delivery_location} ({area})\n\n**Order Summary**:\n{order_summary}\n\n**Total**: ${total_price}",
         "color": 0x00ff00,  # Green color
         "fields": [
             {"name": "Customer Name", "value": customer_name, "inline": True},
             {"name": "Phone Number", "value": phone_number, "inline": True},
-            {"name": "Delivery Location", "value": delivery_location, "inline": True},
+            {"name": "Delivery Location", "value": f"{delivery_location} ({area})", "inline": True},
             {"name": "Total", "value": f"${total_price}", "inline": False},
         ]
     }
@@ -66,21 +66,16 @@ def send_order_to_discord(customer_name, phone_number, delivery_location, order_
 # Streamlit Interface
 st.title("🚀 Sightings Delivery 🌌")
 
-# Section for entering customer name, in-character phone number, and delivery location
+# Section for entering customer name, phone number, and delivery location
 customer_name = st.text_input("Enter your name", "")
 phone_number = st.text_input("Enter your in-character phone number", "")
-delivery_location = st.text_input("Delivery Location", "")
+delivery_location = st.text_input("Enter your exact delivery location (address or area)", "")
 
-# Adding location-based upcharge logic
-def calculate_upcharge(location, total_price):
-    location = location.lower()
-    if "city" in location:
-        return total_price * 0.10  # 10% for city
-    elif "sandy" in location:
-        return total_price * 0.15  # 15% for Sandy
-    elif "paleto" in location:
-        return total_price * 0.20  # 20% for Paleto
-    return 0  # No upcharge if no location match
+# Area selection using radio buttons
+area = st.radio("Select your closest area:", ("City", "Sandy", "Paleto"))
+
+# Display the selected area
+st.write(f"You have selected **{area}** as your closest area for delivery.")
 
 order = {}
 
@@ -135,6 +130,16 @@ with cols[1]:
         if quantity > 0:
             order[("Non-Alcoholic Drinks", item)] = quantity
 
+# Function to calculate upcharge based on location
+def calculate_upcharge(area, total_price):
+    if area == "City":
+        return total_price * 0.10  # 10% for City
+    elif area == "Sandy":
+        return total_price * 0.15  # 15% for Sandy
+    elif area == "Paleto":
+        return total_price * 0.20  # 20% for Paleto
+    return 0  # No upcharge if no valid area
+
 # Submit button with validation
 if st.button("Submit Order"):
     if not customer_name or not phone_number or not delivery_location:
@@ -148,11 +153,11 @@ if st.button("Submit Order"):
         total_price = math.floor(total_price)
 
         # Calculate location-based upcharge
-        upcharge = calculate_upcharge(delivery_location, total_price)
+        upcharge = calculate_upcharge(area, total_price)
         total_price += upcharge
 
         # Send the order to Discord
-        if send_order_to_discord(customer_name, phone_number, delivery_location, order_summary, total_price):
+        if send_order_to_discord(customer_name, phone_number, delivery_location, area, order_summary, total_price):
             st.success(f"Order sent successfully to Sightings! A member of the team will be in contact to confirm your order. Your total is **${total_price}**.")
         else:
             st.error("Failed to send order to Sightings.")
