@@ -2,7 +2,7 @@ import streamlit as st
 import requests
 import math
 
-# Define the menu dictionary
+# Define the menu dictionary (no changes needed here)
 menu = {
     "Breakfast": {
         "Crater Cinnamon Roll Pancakes": 73.50,
@@ -41,12 +41,13 @@ menu = {
 # Webhook URL (replace with your actual webhook URL)
 WEBHOOK_URL = "https://discord.com/api/webhooks/1272653289984364654/GiWp1B37ITq2yvtLWRfIGY7IIIzOIAyI4s2LXDYbjv_aJMc-q8jFZrowYGScKeC4Tuz7"
 
-# Function to send order to Discord using a webhook with an embed
+# Function to send order to Discord with role mention
 def send_order_to_discord(customer_name, phone_number, delivery_location, order_summary, total_price):
+    role_mention = "<@&1146438518235725954>"  # Mention the 'sightings takeout' role
     embed = {
         "title": f"New Order from {customer_name}",
-        "description": f"**Phone Number**: {phone_number}\n\n**Delivery Location**: {delivery_location}\n\n**Order Summary**:\n{order_summary}\n\n**Total**: ${total_price}",
-        "color": 0x00ff00,  # Green color, you can change it to another color
+        "description": f"{role_mention}\n\n**Phone Number**: {phone_number}\n\n**Delivery Location**: {delivery_location}\n\n**Order Summary**:\n{order_summary}\n\n**Total**: ${total_price}",
+        "color": 0x00ff00,  # Green color
         "fields": [
             {"name": "Customer Name", "value": customer_name, "inline": True},
             {"name": "Phone Number", "value": phone_number, "inline": True},
@@ -69,6 +70,17 @@ st.title("🚀 Sightings Delivery 🌌")
 customer_name = st.text_input("Enter your name", "")
 phone_number = st.text_input("Enter your in-character phone number", "")
 delivery_location = st.text_input("Delivery Location", "")
+
+# Adding location-based upcharge logic
+def calculate_upcharge(location, total_price):
+    location = location.lower()
+    if "city" in location:
+        return total_price * 0.10  # 10% for city
+    elif "sandy" in location:
+        return total_price * 0.15  # 15% for Sandy
+    elif "paleto" in location:
+        return total_price * 0.20  # 20% for Paleto
+    return 0  # No upcharge if no location match
 
 order = {}
 
@@ -135,6 +147,11 @@ if st.button("Submit Order"):
         # Round down the total price to the nearest whole number
         total_price = math.floor(total_price)
 
+        # Calculate location-based upcharge
+        upcharge = calculate_upcharge(delivery_location, total_price)
+        total_price += upcharge
+
+        # Send the order to Discord
         if send_order_to_discord(customer_name, phone_number, delivery_location, order_summary, total_price):
             st.success(f"Order sent successfully to Sightings! A member of the team will be in contact to confirm your order. Your total is **${total_price}**.")
         else:
