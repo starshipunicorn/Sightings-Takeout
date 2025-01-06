@@ -71,11 +71,16 @@ customer_name = st.text_input("Enter your name", "")
 phone_number = st.text_input("Enter your in-character phone number", "")
 delivery_location = st.text_input("Enter your exact delivery location (address or area)", "")
 
-# Area selection using radio buttons
-area = st.radio("Select your closest area:", ("City", "Sandy", "Paleto"))
+# Delivery location selection with "Sightings" directly included
+location_type = st.radio("Select your delivery location type:", ("Sightings", "City", "Sandy", "Paleto"))
 
-# Display the selected area
-st.write(f"You have selected **{area}** as your closest area for delivery.")
+# Area selection will no longer be needed since location_type includes all options now
+if location_type == "Sightings":
+    area = "Sightings"
+    st.write(f"You have selected **Sightings** for your delivery location (No upcharge).")
+else:
+    area = location_type
+    st.write(f"You have selected **{area}** as your closest area for delivery.")
 
 order = {}
 
@@ -138,7 +143,7 @@ def calculate_upcharge(area, total_price):
         return total_price * 0.15  # 15% for Sandy
     elif area == "Paleto":
         return total_price * 0.20  # 20% for Paleto
-    return 0  # No upcharge if no valid area
+    return 0  # No upcharge for Sightings
 
 # Submit button with validation
 if st.button("Submit Order"):
@@ -152,9 +157,12 @@ if st.button("Submit Order"):
         # Round down the total price to the nearest whole number
         total_price = math.floor(total_price)
 
-        # Calculate location-based upcharge
-        upcharge = calculate_upcharge(area, total_price)
-        total_price += upcharge
+        # Calculate location-based upcharge, skip for Sightings location
+        if area != "Sightings":
+            upcharge = calculate_upcharge(area, total_price)
+            total_price += upcharge
+        else:
+            upcharge = 0  # No upcharge for Sightings location
 
         # Send the order to Discord
         if send_order_to_discord(customer_name, phone_number, delivery_location, area, order_summary, total_price):
