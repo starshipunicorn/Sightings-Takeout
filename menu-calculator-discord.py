@@ -43,7 +43,6 @@ WEBHOOK_URL = st.secrets["DISCORD"]["webhook_url"]
 
 # Function to send order to Discord with role mention
 def send_order_to_discord(customer_name, phone_number, delivery_location, area, order_summary, total_price):
-    role_mention = "<@&1146438518235725954>"  # Mention the 'sightings takeout' role
     embed = {
         "title": f"New Order from {customer_name}",
         "description": f"{role_mention}\n\n**Phone Number**: {phone_number}\n\n**Delivery Location**: {delivery_location} ({area})\n\n**Order Summary**:\n{order_summary}\n\n**Total**: ${total_price}",
