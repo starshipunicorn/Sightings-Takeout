@@ -38,8 +38,8 @@ menu = {
     }
 }
 
-# Webhook URL (replace with your actual webhook URL)
-WEBHOOK_URL = "https://discord.com/api/webhooks/1326000910299566123/u1VEjUh50xDe62eNOG0vjjf37GoKuMXWhHJ-o6PTiBslYyODGyB24VIGMPJpwF3XVahl"
+# Get the webhook URL from Streamlit secrets
+WEBHOOK_URL = st.secrets["DISCORD"]["webhook_url"]
 
 # Function to send order to Discord with role mention
 def send_order_to_discord(customer_name, phone_number, delivery_location, area, order_summary, total_price):
