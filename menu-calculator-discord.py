@@ -44,16 +44,16 @@ WEBHOOK_URL = st.secrets["DISCORD"]["webhook_url"]
 # Function to send order to Discord with role mention
 def send_order_to_discord(customer_name, phone_number, delivery_location, area, order_summary, total_price):
     embed = {
-        "title": f"New Order from {customer_name}",
-        "description": f"{role_mention}\n\n**Phone Number**: {phone_number}\n\n**Delivery Location**: {delivery_location} ({area})\n\n**Order Summary**:\n{order_summary}\n\n**Total**: ${total_price}",
-        "color": 0x00ff00,  # Green color
-        "fields": [
-            {"name": "Customer Name", "value": customer_name, "inline": True},
-            {"name": "Phone Number", "value": phone_number, "inline": True},
-            {"name": "Delivery Location", "value": f"{delivery_location} ({area})", "inline": True},
-            {"name": "Total", "value": f"${total_price}", "inline": False},
-        ]
-    }
+    "title": f"New Order from {customer_name}",
+    "description": f"\n\n**Phone Number**: {phone_number}\n\n**Delivery Location**: {delivery_location} ({area})\n\n**Order Summary**:\n{order_summary}\n\n**Total**: ${total_price}",
+    "color": 0x00ff00,  # Green color
+    "fields": [
+        {"name": "Customer Name", "value": customer_name, "inline": True},
+        {"name": "Phone Number", "value": phone_number, "inline": True},
+        {"name": "Delivery Location", "value": f"{delivery_location} ({area})", "inline": True},
+        {"name": "Total", "value": f"${total_price}", "inline": False},
+    ]
+}
 
     data = {
         "embeds": [embed]  # Embeds must be passed as an array
