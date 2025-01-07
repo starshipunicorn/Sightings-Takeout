@@ -39,7 +39,7 @@ menu = {
 }
 
 # Webhook URL (replace with your actual webhook URL)
-WEBHOOK_URL = "https://discord.com/api/webhooks/1272653289984364654/GiWp1B37ITq2yvtLWRfIGY7IIIzOIAyI4s2LXDYbjv_aJMc-q8jFZrowYGScKeC4Tuz7"
+WEBHOOK_URL = "https://discord.com/api/webhooks/1326000910299566123/u1VEjUh50xDe62eNOG0vjjf37GoKuMXWhHJ-o6PTiBslYyODGyB24VIGMPJpwF3XVahl"
 
 # Function to send order to Discord with role mention
 def send_order_to_discord(customer_name, phone_number, delivery_location, area, order_summary, total_price):
