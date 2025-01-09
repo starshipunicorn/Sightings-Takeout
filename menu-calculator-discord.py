@@ -38,7 +38,8 @@ menu = {
     }
 }
 
-# Get the role ID from Streamlit secrets
+# Correctly define WEBHOOK_URL outside the function
+WEBHOOK_URL = st.secrets["DISCORD"]["webhook_url"]
 role_id = st.secrets["DISCORD"]["role_id"]
 
 # Function to send order to Discord with role mention
@@ -66,7 +67,6 @@ def send_order_to_discord(customer_name, phone_number, delivery_location, area, 
     # Send the data to Discord via the webhook URL
     response = requests.post(WEBHOOK_URL, json=data)
     return response.status_code == 204
-
 
 # Streamlit Interface
 st.title("🚀 Sightings Delivery 🌌")
@@ -140,16 +140,6 @@ with cols[1]:
         if quantity > 0:
             order[("Non-Alcoholic Drinks", item)] = quantity
 
-# Function to calculate upcharge based on location
-def calculate_upcharge(area, total_price):
-    if area == "City":
-        return total_price * 0.10  # 10% for City
-    elif area == "Sandy":
-        return total_price * 0.15  # 15% for Sandy
-    elif area == "Paleto":
-        return total_price * 0.20  # 20% for Paleto
-    return 0  # No upcharge for Sightings
-
 # Submit button with validation
 if st.button("Submit Order"):
     if not customer_name or not phone_number or not delivery_location:
@@ -161,13 +151,6 @@ if st.button("Submit Order"):
 
         # Round down the total price to the nearest whole number
         total_price = math.floor(total_price)
-
-        # Calculate location-based upcharge, skip for Sightings location
-        if area != "Sightings":
-            upcharge = calculate_upcharge(area, total_price)
-            total_price += upcharge
-        else:
-            upcharge = 0  # No upcharge for Sightings location
 
         # Send the order to Discord
         if send_order_to_discord(customer_name, phone_number, delivery_location, area, order_summary, total_price):
