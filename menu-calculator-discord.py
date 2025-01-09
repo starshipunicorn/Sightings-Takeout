@@ -38,19 +38,19 @@ menu = {
     }
 }
 
-# Correctly define WEBHOOK_URL outside the function
+# Correctly define WEBHOOK_URL and role_id outside the function
 WEBHOOK_URL = st.secrets["DISCORD"]["webhook_url"]
 role_id = st.secrets["DISCORD"]["role_id"]
 
-# Function to send order to Discord with role mention
+# Function to send order to Discord with role mention outside the embed
 def send_order_to_discord(customer_name, phone_number, delivery_location, area, order_summary, total_price):
-    # Format the role mention with the role ID
+    # Format the role mention with the role ID outside of the embed (in the content)
     role_mention = f"<@&{role_id}>"
 
-    # Embed message content with role mention included in the description or title
+    # Embed message content (without the role mention)
     embed = {
         "title": f"New Order from {customer_name}",
-        "description": f"{role_mention}\n\n**Phone Number**: {phone_number}\n\n**Delivery Location**: {delivery_location} ({area})\n\n**Order Summary**:\n{order_summary}\n\n**Total**: ${total_price}",
+        "description": f"\n\n**Phone Number**: {phone_number}\n\n**Delivery Location**: {delivery_location} ({area})\n\n**Order Summary**:\n{order_summary}\n\n**Total**: ${total_price}",
         "color": 0x00ff00,  # Green color
         "fields": [
             {"name": "Customer Name", "value": customer_name, "inline": True},
@@ -60,8 +60,10 @@ def send_order_to_discord(customer_name, phone_number, delivery_location, area, 
         ]
     }
 
+    # The payload now contains the role mention outside the embed in 'content'
     data = {
-        "embeds": [embed]  # Embeds must be passed as an array
+        "content": role_mention,  # Role mention outside the embed
+        "embeds": [embed]  # Embeds with order details
     }
 
     # Send the data to Discord via the webhook URL
