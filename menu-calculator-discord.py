@@ -17,11 +17,11 @@ menu = {
     "Mains": {
         "Celestial Creature Gyro": 115.50,
         "Andromeda Invader Curry": 105.00,
-        "Planetary Pizza": 80.00,
+        "Planetary Pizza": 95.00,
         "Galaxy Guac Burger and Meteorite Fries": 122.50
     },
     "Desserts": {
-        "Spacecraft S’mores Shake": 1000.00,
+        "Spacecraft S’mores Shake": 450.00,
         "Blackhole Brownies": 66.50,
         "Martian Mousse": 73.50
     },
