@@ -2,7 +2,7 @@ import streamlit as st
 import requests
 import math
 
-# 🚀 Updated menu with Extras
+# 🚀 Menu
 menu = {
     "Breakfast": {
         "Supernova Breakfast Sandwich": 110,
@@ -38,7 +38,6 @@ menu = {
     }
 }
 
-# 🌐 Discord webhook details
 WEBHOOK_URL = st.secrets["DISCORD"]["webhook_url"]
 role_id = st.secrets["DISCORD"]["role_id"]
 
@@ -59,12 +58,12 @@ def send_order_to_discord(customer_name, phone_number, delivery_location, area, 
     response = requests.post(WEBHOOK_URL, json=data)
     return response.status_code == 204
 
-# 🎨 App layout
+# 🎨 App UI
 st.set_page_config(page_title="Sightings Delivery", layout="centered")
 st.title("🚀 Sightings Delivery 🌌")
 st.markdown("_ExtraTerrestrial Flavors & Comfort Bites_")
 
-# 📝 Customer info
+# 📝 Customer Info
 customer_name = st.text_input("Enter your name", "")
 phone_number = st.text_input("Enter your in-character phone number", "")
 delivery_location = st.text_input("Enter your exact delivery location (address or area)", "")
@@ -76,7 +75,7 @@ if area == "Sightings":
 else:
     st.write(f"You have selected **{area}** as your closest area for delivery.")
 
-# 🛒 Order form
+# 🛒 Order Inputs
 order = {}
 for section, items in menu.items():
     with st.expander(f"🛸 {section}", expanded=True):
@@ -85,17 +84,53 @@ for section, items in menu.items():
             if qty > 0:
                 order[(section, item)] = qty
 
-# ✅ Submit order
-if st.button("Submit Order"):
-    if not customer_name or not phone_number or not delivery_location:
-        st.warning("Please enter your name, phone number, and delivery location to submit your order.")
+# 🧠 State control for calculate/submit
+if "calculated" not in st.session_state:
+    st.session_state.calculated = False
+if "total_price" not in st.session_state:
+    st.session_state.total_price = 0
+if "order_summary" not in st.session_state:
+    st.session_state.order_summary = ""
+
+# 🔢 Calculate total
+if st.button("Calculate Total"):
+    if not order:
+        st.warning("Please select at least one item to calculate your total.")
     else:
-        # 🧾 Create summary
-        order_summary = "\n".join([f"{item} x{qty}" for (_, item), qty in order.items()])
         base_total = sum(menu[category][item] * qty for (category, item), qty in order.items())
         total_price = math.floor(base_total)
+        order_summary = "\n".join([f"{item} x{qty}" for (_, item), qty in order.items()])
 
-        if send_order_to_discord(customer_name, phone_number, delivery_location, area, order_summary, total_price):
-            st.success(f"Order sent successfully to Sightings! Your total is **${total_price}**. A team member will be in contact soon.")
-        else:
-            st.error("Failed to send order to Sightings.")
+        st.session_state.total_price = total_price
+        st.session_state.order_summary = order_summary
+        st.session_state.calculated = True
+
+# 🧾 If calculated, show summary + submit option
+if st.session_state.calculated:
+    st.markdown("---")
+    st.markdown(f"### 🌌 Subtotal: **${st.session_state.total_price}**")
+    st.subheader("📦 Order Summary")
+    for (cat, item), qty in order.items():
+        st.markdown(f"- **{item}** ({cat}) × {qty} @ ${menu[cat][item]} each")
+
+    # ✅ Submission readiness
+    ready_to_submit = st.checkbox("✅ I’m ready to submit this order")
+
+    if ready_to_submit:
+        if st.button("Submit Order"):
+            if not customer_name or not phone_number or not delivery_location:
+                st.warning("Please enter your name, phone number, and delivery location to submit your order.")
+            else:
+                success = send_order_to_discord(
+                    customer_name,
+                    phone_number,
+                    delivery_location,
+                    area,
+                    st.session_state.order_summary,
+                    st.session_state.total_price
+                )
+                if success:
+                    st.success(f"Order sent successfully to Sightings! Your total is **${st.session_state.total_price}**. A team member will be in contact soon.")
+                    st.session_state.calculated = False
+                else:
+                    st.error("Failed to send order to Sightings.")
